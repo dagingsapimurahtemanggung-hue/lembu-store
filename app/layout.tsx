@@ -87,9 +87,12 @@ export const metadata: Metadata = {
     images: [brandImage],
   },
   icons: {
-    icon: [{ url: site.logo, sizes: "500x500", type: "image/webp" }],
-    shortcut: [{ url: site.logo, sizes: "500x500", type: "image/webp" }],
-    apple: [{ url: site.logo, sizes: "500x500", type: "image/webp" }],
+    icon: [
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: site.logo, sizes: "500x500", type: "image/webp" },
+    ],
+    shortcut: [{ url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   verification: {
     google: "a0b0981800d53c8a",

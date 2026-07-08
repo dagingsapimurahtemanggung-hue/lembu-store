@@ -24,7 +24,7 @@ export type ServiceItem = {
   highlights: string[];
 };
 
-const fallbackSiteUrl = "https://lembu-baru.vercel.app";
+const fallbackSiteUrl = "https://www.lembulemu.com";
 
 function cleanSiteUrl(value: string | undefined) {
   const url = value?.trim() || fallbackSiteUrl;

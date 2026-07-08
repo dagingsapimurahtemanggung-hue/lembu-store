@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { absoluteUrl, productPath, products, servicePath, services, site } from "./lib/site";
 
-const lastModified = "2026-07-07";
+const lastModified = "2026-07-08";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const homepage: MetadataRoute.Sitemap[number] = {
