@@ -5,6 +5,8 @@ import {
   faqs,
   formatRupiah,
   products,
+  seoKeywords,
+  serviceAreas,
   services,
   site,
   siteUrl,
@@ -12,7 +14,7 @@ import {
 
 const productListSchema = {
   "@type": "ItemList",
-  name: "Katalog daging sapi dan kambing Lembu Lemu",
+  name: "Katalog daging sapi Lembu Lemu",
   itemListElement: products.map((product, index) => ({
     "@type": "ListItem",
     position: index + 1,
@@ -30,7 +32,10 @@ const productListSchema = {
         "@type": "Offer",
         priceCurrency: "IDR",
         price: product.price,
-        availability: "https://schema.org/InStock",
+        availability:
+          product.available === false
+            ? "https://schema.org/OutOfStock"
+            : "https://schema.org/InStock",
         url: absoluteUrl(`/produk/${product.slug}`),
       },
     },
@@ -50,7 +55,7 @@ const serviceListSchema = {
       provider: {
         "@id": `${siteUrl}/#localbusiness`,
       },
-      areaServed: ["Temanggung", "Tlogomulyo", "Magelang", "Wonosobo"],
+      areaServed: serviceAreas,
       url: absoluteUrl(`/layanan/${service.slug}`),
     },
   })),
@@ -70,7 +75,8 @@ const jsonLd = {
       logo: absoluteUrl(site.logo),
       telephone: site.phone,
       email: site.email,
-      priceRange: `${formatRupiah(35000)} - ${formatRupiah(165000)} per kg`,
+      priceRange: `${formatRupiah(30000)} - ${formatRupiah(150000)} per kg`,
+      knowsAbout: seoKeywords.slice(0, 140),
       address: {
         "@type": "PostalAddress",
         streetAddress: "Desa Balerejo RT 1 RW 1",
@@ -79,7 +85,7 @@ const jsonLd = {
         postalCode: "50274",
         addressCountry: "ID",
       },
-      areaServed: ["Tlogomulyo", "Temanggung", "Magelang", "Wonosobo", "Jogja"],
+      areaServed: serviceAreas,
       openingHoursSpecification: [
         {
           "@type": "OpeningHoursSpecification",
@@ -89,7 +95,27 @@ const jsonLd = {
         },
       ],
       sameAs: [site.instagram, `https://wa.me/${site.whatsapp}`],
-      makesOffer: products.slice(0, 6).map((product) => ({
+      hasOfferCatalog: {
+        "@type": "OfferCatalog",
+        name: "Katalog daging sapi Lembu Lemu",
+        itemListElement: products.map((product) => ({
+          "@type": "Offer",
+          itemOffered: {
+            "@type": "Product",
+            name: product.name,
+            description: product.summary,
+            image: absoluteUrl(product.img),
+          },
+          priceCurrency: "IDR",
+          price: product.price,
+          availability:
+            product.available === false
+              ? "https://schema.org/OutOfStock"
+              : "https://schema.org/InStock",
+          url: absoluteUrl(`/produk/${product.slug}`),
+        })),
+      },
+      makesOffer: products.filter((product) => product.available !== false).map((product) => ({
         "@type": "Offer",
         itemOffered: {
           "@type": "Product",
@@ -115,8 +141,9 @@ const jsonLd = {
       "@type": "WebPage",
       "@id": `${siteUrl}/#webpage`,
       url: siteUrl,
-      name: "Daging Sapi Segar dan Kambing Halal Temanggung",
+      name: "Daging Sapi Segar Halal Temanggung",
       description: site.description,
+      keywords: seoKeywords.slice(0, 220).join(", "),
       inLanguage: "id-ID",
       isPartOf: {
         "@id": `${siteUrl}/#website`,
@@ -130,7 +157,7 @@ const jsonLd = {
         cssSelector: ["h1", ".hero-copy p", ".faq-list summary"],
       },
       datePublished: "2026-07-06",
-      dateModified: "2026-07-06",
+      dateModified: "2026-07-16",
     },
     productListSchema,
     serviceListSchema,

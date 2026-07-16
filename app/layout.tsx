@@ -28,7 +28,7 @@ const mono = IBM_Plex_Mono({
 });
 
 const title =
-  "Lembu Lemu | Daging Sapi Segar & Kambing Halal Temanggung";
+  "Jual Daging Sapi Segar Halal Temanggung | Lembu Lemu";
 const brandImage = absoluteUrl(site.ogImage);
 
 export const metadata: Metadata = {

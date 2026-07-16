@@ -9,6 +9,7 @@ import {
   absoluteUrl,
   productPath,
   products,
+  serviceAreas,
   servicePath,
   services,
   site,
@@ -50,8 +51,12 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
       service.name,
       `${service.name} Temanggung`,
       `${service.name} Tlogomulyo`,
+      `${service.name} Balerejo`,
       `${service.name} daging halal`,
+      `${service.name} daging sapi`,
+      `${service.name} via WhatsApp`,
       ...service.highlights,
+      ...serviceAreas.slice(0, 12).map((area) => `${service.name} ${area}`),
     ],
     openGraph: {
       title,
@@ -60,7 +65,7 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
       type: "website",
       images: [
         {
-          url: site.ogImage,
+          url: absoluteUrl(site.ogImage),
           width: 500,
           height: 500,
           alt: "Lembu Lemu Temanggung",
@@ -85,15 +90,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
     notFound();
   }
 
-  const featuredProducts = products
-    .filter((product) => {
-      if (service.slug.includes("aqiqah") || service.slug.includes("kambing")) {
-        return product.category === "kambing";
-      }
-
-      return product.category === "sapi";
-    })
-    .slice(0, 3);
+  const featuredProducts = products.filter((product) => product.available !== false).slice(0, 3);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -106,7 +103,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
         provider: {
           "@id": `${siteUrl}/#localbusiness`,
         },
-        areaServed: ["Tlogomulyo", "Temanggung", "Magelang", "Wonosobo", "Jogja"],
+        areaServed: serviceAreas,
         serviceType: service.highlights.join(", "),
         url: absoluteUrl(servicePath(service)),
       },
@@ -200,7 +197,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
               </li>
               <li>
                 <ShieldCheck size={18} />
-                Bisa digabung dengan potongan sapi, kambing, tulang, atau jeroan.
+                Bisa digabung dengan potongan daging sapi, tulang, atau jeroan.
               </li>
               <li>
                 <ShieldCheck size={18} />

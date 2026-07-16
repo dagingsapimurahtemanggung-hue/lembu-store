@@ -11,6 +11,7 @@ import {
   formatRupiah,
   productPath,
   products,
+  serviceAreas,
   services,
   site,
   siteUrl,
@@ -22,6 +23,22 @@ type ProductPageProps = {
 
 function getProduct(slug: string) {
   return products.find((product) => product.slug === slug);
+}
+
+function productPriceText(product: (typeof products)[number], weight?: string) {
+  if (product.available === false) {
+    return product.priceLabel ?? "Tidak dijual";
+  }
+
+  if (product.priceLabel) {
+    return product.priceLabel;
+  }
+
+  if (weight) {
+    return formatRupiah(product.price * (Number.parseFloat(weight) || 1));
+  }
+
+  return `${formatRupiah(product.price)}/kg`;
 }
 
 export function generateStaticParams() {
@@ -39,7 +56,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   }
 
   const title = `${product.name} Segar Temanggung`;
-  const description = `${product.summary} Harga awal ${formatRupiah(product.price)}/kg. Pesan ${product.name.toLowerCase()} halal dari Lembu Lemu Tlogomulyo via WhatsApp.`;
+  const priceText = productPriceText(product);
+  const description = `${product.summary} Harga ${priceText}. Konfirmasi ${product.name.toLowerCase()} halal dari Lembu Lemu Tlogomulyo via WhatsApp.`;
 
   return {
     title,
@@ -51,9 +69,14 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       product.name,
       `${product.name} Temanggung`,
       `${product.name} Tlogomulyo`,
+      `${product.name} Balerejo`,
       `${product.name} halal`,
       `${product.name} segar`,
+      `harga ${product.name}`,
+      `jual ${product.name}`,
+      `pesan ${product.name}`,
       ...product.uses.map((use) => `${product.name} untuk ${use}`),
+      ...serviceAreas.slice(0, 12).map((area) => `${product.name} ${area}`),
     ],
     openGraph: {
       title,
@@ -62,7 +85,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       type: "website",
       images: [
         {
-          url: product.img,
+          url: absoluteUrl(product.img),
           alt: product.alt,
         },
       ],
@@ -85,7 +108,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   const relatedProducts = products
-    .filter((item) => item.category === product.category && item.id !== product.id)
+    .filter(
+      (item) =>
+        item.category === product.category && item.id !== product.id && item.available !== false,
+    )
     .slice(0, 3);
 
   const jsonLd = {
@@ -107,7 +133,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
           url: absoluteUrl(productPath(product)),
           priceCurrency: "IDR",
           price: product.price,
-          availability: "https://schema.org/InStock",
+          availability:
+            product.available === false
+              ? "https://schema.org/OutOfStock"
+              : "https://schema.org/InStock",
           seller: {
             "@id": `${siteUrl}/#localbusiness`,
           },
@@ -167,6 +196,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const waText = encodeURIComponent(
     `Halo Lembu Lemu, saya ingin tanya stok ${product.name}. Berat yang dibutuhkan:`,
   );
+  const priceText = productPriceText(product);
 
   return (
     <>
@@ -175,12 +205,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <main className="detail-page">
         <section className="detail-hero">
           <div className="detail-copy">
-            <span className="eyebrow">Produk {product.category}</span>
+            <span className="eyebrow">Produk daging sapi</span>
             <h1>{product.name}</h1>
             <p>{product.summary}</p>
             <div className="detail-price">
               <span>Harga awal</span>
-              <strong>{formatRupiah(product.price)}/kg</strong>
+              <strong>{priceText}</strong>
             </div>
             <div className="detail-actions">
               <a
@@ -234,7 +264,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {product.weights.map((weight) => (
                 <span key={weight}>
                   {weight}
-                  <strong>{formatRupiah(product.price * (Number.parseFloat(weight) || 1))}</strong>
+                  <strong>{productPriceText(product, weight)}</strong>
                 </span>
               ))}
             </div>
@@ -251,7 +281,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   <Image src={item.img} alt={item.alt} width={96} height={96} />
                   <span>
                     <strong>{item.name}</strong>
-                    {formatRupiah(item.price)}/kg
+                    {productPriceText(item)}
                   </span>
                   <ChevronRight size={18} />
                 </Link>

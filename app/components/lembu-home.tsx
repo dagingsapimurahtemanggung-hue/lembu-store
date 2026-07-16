@@ -25,12 +25,13 @@ import {
   Truck,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   faqs,
   formatRupiah,
   galleryItems,
   navItems,
+  areaPath,
   productPath,
   products,
   seoClusters,
@@ -40,7 +41,6 @@ import {
   site,
   sourceReferences,
   trustPoints,
-  type ProductCategory,
   type ProductItem,
 } from "../lib/site";
 
@@ -50,18 +50,29 @@ type CartItem = {
   name: string;
   img: string;
   price: number;
+  priceLabel: string;
   weight: string;
   quantity: number;
 };
 
-const categoryLabels: Array<{ value: "all" | ProductCategory; label: string }> = [
-  { value: "all", label: "Semua" },
-  { value: "sapi", label: "Sapi" },
-  { value: "kambing", label: "Kambing" },
-];
-
 function weightMultiplier(weight: string) {
   return Number.parseFloat(weight.replace("kg", "")) || 1;
+}
+
+function productPriceText(product: ProductItem, weight?: string) {
+  if (product.available === false) {
+    return product.priceLabel ?? "Tidak dijual";
+  }
+
+  if (product.priceLabel) {
+    return product.priceLabel;
+  }
+
+  if (weight) {
+    return `${formatRupiah(product.price * weightMultiplier(weight))} / ${weight}`;
+  }
+
+  return `${formatRupiah(product.price)}/kg`;
 }
 
 function buildWhatsAppText(cart: CartItem[]) {
@@ -72,7 +83,7 @@ function buildWhatsAppText(cart: CartItem[]) {
 
   const lines = cart.map((item) => {
     const lineTotal = item.price * weightMultiplier(item.weight) * item.quantity;
-    return `- ${item.name} | ${item.weight} x ${item.quantity} = ${formatRupiah(lineTotal)}`;
+    return `- ${item.name} | ${item.weight} x ${item.quantity} | ${item.priceLabel} = ${formatRupiah(lineTotal)}`;
   });
 
   return [
@@ -116,7 +127,6 @@ function VideoTile({ videoId, title }: { videoId: string; title: string }) {
 }
 
 export function LembuHome() {
-  const [activeCategory, setActiveCategory] = useState<"all" | ProductCategory>("all");
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>(() =>
     Object.fromEntries(products.map((product) => [product.id, product.defaultWeight])),
   );
@@ -125,14 +135,6 @@ export function LembuHome() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [backTopVisible, setBackTopVisible] = useState(false);
   const [notice, setNotice] = useState("");
-
-  const filteredProducts = useMemo(() => {
-    if (activeCategory === "all") {
-      return products;
-    }
-
-    return products.filter((product) => product.category === activeCategory);
-  }, [activeCategory]);
 
   const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
   const cartTotal = cart.reduce(
@@ -179,6 +181,11 @@ export function LembuHome() {
   }, []);
 
   function addProduct(product: ProductItem) {
+    if (product.available === false) {
+      setNotice(`${product.name} tidak dijual saat ini`);
+      return;
+    }
+
     const weight = selectedWeights[product.id] ?? product.defaultWeight;
     const key = `${product.id}-${weight}`;
 
@@ -198,6 +205,7 @@ export function LembuHome() {
           name: product.name,
           img: product.img,
           price: product.price,
+          priceLabel: productPriceText(product),
           weight,
           quantity: 1,
         },
@@ -325,7 +333,7 @@ export function LembuHome() {
               <span>halal.</span>
             </h1>
             <p>
-              Dari sumber dekat untuk rumah tangga, katering, aqiqah, kurban,
+              Dari sumber dekat untuk rumah tangga, katering, kurban sapi,
               warung, dan restoran. Pilih potongan, tentukan berat, lalu konfirmasi
               stok lewat WhatsApp.
             </p>
@@ -421,9 +429,8 @@ export function LembuHome() {
               <span>Ini dapur pasokan daging lokal.</span>
             </h2>
             <p>
-              Lembu Lemu menyediakan dan mendistribusikan daging sapi serta kambing
-              berkualitas melalui produksi yang dekat, ringkas, bersih, dan mudah
-              dikonfirmasi.
+              Lembu Lemu menyediakan dan mendistribusikan daging sapi berkualitas
+              melalui produksi yang dekat, ringkas, bersih, dan mudah dikonfirmasi.
             </p>
           </div>
           <div className="trust-list">
@@ -449,24 +456,10 @@ export function LembuHome() {
             </p>
           </div>
 
-          <div className="category-tabs" role="tablist" aria-label="Filter produk">
-            {categoryLabels.map((category) => (
-              <button
-                key={category.value}
-                type="button"
-                className={activeCategory === category.value ? "active" : ""}
-                aria-pressed={activeCategory === category.value}
-                onClick={() => setActiveCategory(category.value)}
-              >
-                {category.label}
-              </button>
-            ))}
-          </div>
-
           <div className="product-grid">
-            {filteredProducts.map((product) => {
+            {products.map((product) => {
               const weight = selectedWeights[product.id] ?? product.defaultWeight;
-              const displayPrice = product.price * weightMultiplier(weight);
+              const displayPrice = productPriceText(product, weight);
 
               return (
                 <article className="product-card" key={product.id}>
@@ -477,11 +470,11 @@ export function LembuHome() {
                       fill
                       sizes="(max-width: 768px) 92vw, (max-width: 1200px) 45vw, 25vw"
                     />
-                    <span>{formatRupiah(displayPrice)} / {weight}</span>
+                    <span>{displayPrice}</span>
                   </Link>
                   <div className="product-body">
                     <div>
-                      <p className="product-kicker">{product.category} / {product.unit}</p>
+                      <p className="product-kicker">Daging sapi / {product.unit}</p>
                       <h3>{product.name}</h3>
                       <p>{product.cut}</p>
                     </div>
@@ -503,9 +496,13 @@ export function LembuHome() {
                       ))}
                     </div>
                     <div className="product-actions">
-                      <button type="button" onClick={() => addProduct(product)}>
+                      <button
+                        type="button"
+                        onClick={() => addProduct(product)}
+                        disabled={product.available === false}
+                      >
                         <Plus size={17} />
-                        Tambah
+                        {product.available === false ? "Tidak dijual" : "Tambah"}
                       </button>
                       <Link href={productPath(product)}>
                         Detail
@@ -574,7 +571,9 @@ export function LembuHome() {
           </div>
           <div className="area-list">
             {serviceAreas.map((area) => (
-              <span key={area}>{area}</span>
+              <Link href={areaPath(area)} key={area}>
+                {area}
+              </Link>
             ))}
           </div>
         </section>
@@ -741,7 +740,7 @@ export function LembuHome() {
                     <Image src={item.img} alt={item.name} width={58} height={58} />
                     <div>
                       <h3>{item.name}</h3>
-                      <p>{item.weight} x {formatRupiah(item.price)}/kg</p>
+                      <p>{item.weight} x {item.priceLabel}</p>
                       <strong>{formatRupiah(lineTotal)}</strong>
                     </div>
                     <div className="quantity-control">

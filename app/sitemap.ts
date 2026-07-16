@@ -1,7 +1,16 @@
 import type { MetadataRoute } from "next";
-import { absoluteUrl, productPath, products, servicePath, services, site } from "./lib/site";
+import {
+  absoluteUrl,
+  areaPath,
+  productPath,
+  products,
+  serviceAreas,
+  servicePath,
+  services,
+  site,
+} from "./lib/site";
 
-const lastModified = "2026-07-08";
+const lastModified = "2026-07-16";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const homepage: MetadataRoute.Sitemap[number] = {
@@ -33,5 +42,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.72,
   }));
 
-  return [homepage, ...productPages, ...servicePages];
+  const areaPages = serviceAreas.map((area) => ({
+    url: absoluteUrl(areaPath(area)),
+    lastModified,
+    changeFrequency: "monthly" as const,
+    priority: 0.64,
+  }));
+
+  return [homepage, ...productPages, ...servicePages, ...areaPages];
 }
