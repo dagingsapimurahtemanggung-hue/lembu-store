@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowUp,
-  Camera,
   CheckCircle,
   ChevronRight,
   Clock,
@@ -17,7 +16,6 @@ import {
   Minus,
   PackageCheck,
   Phone,
-  Play,
   Plus,
   Search,
   ShieldCheck,
@@ -26,11 +24,11 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { InstagramIcon, MediaSection, TikTokIcon } from "./media-section";
 import {
   faqs,
   findVariant,
   formatRupiah,
-  galleryItems,
   navItems,
   areaPath,
   productPath,
@@ -80,35 +78,6 @@ function buildWhatsAppText(cart: CartItem[]) {
     "",
     "Mohon konfirmasi stok, jadwal kirim, dan ongkir. Terima kasih.",
   ].join("\n");
-}
-
-function VideoTile({ videoId, title }: { videoId: string; title: string }) {
-  const [playing, setPlaying] = useState(false);
-
-  if (playing) {
-    return (
-      <iframe
-        title={title}
-        src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowFullScreen
-      />
-    );
-  }
-
-  return (
-    <button className="video-thumb" type="button" onClick={() => setPlaying(true)}>
-      <Image
-        src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
-        alt={`Thumbnail ${title}`}
-        fill
-        sizes="(max-width: 768px) 92vw, 42vw"
-      />
-      <span className="play-mark" aria-hidden="true">
-        <Play size={28} fill="currentColor" />
-      </span>
-    </button>
-  );
 }
 
 export function LembuHome() {
@@ -282,8 +251,12 @@ Email: ${email}`,
           {site.email}
         </a>
         <a href={site.instagram} className="topbar-icon" target="_blank" rel="noopener noreferrer">
-          <Camera size={15} />
+          <InstagramIcon size={15} />
           <span className="sr-only">Instagram Lembu Lemu</span>
+        </a>
+        <a href={site.tiktok} className="topbar-icon" target="_blank" rel="noopener noreferrer">
+          <TikTokIcon size={15} />
+          <span className="sr-only">TikTok Lembu Lemu</span>
         </a>
       </div>
 
@@ -392,41 +365,7 @@ Email: ${email}`,
           </div>
         </section>
 
-        <section className="gallery-section" id="galeri">
-          <div className="section-head split">
-            <div>
-              <span className="eyebrow">Galeri proses</span>
-              <h2>Lihat potongan, proses, dan tim kami.</h2>
-            </div>
-            <p>
-              Foto asli dan video proses membantu pelanggan menilai kesegaran, cara potong,
-              dan kesiapan pengiriman sebelum pesan.
-            </p>
-          </div>
-
-          <div className="gallery-grid">
-            {galleryItems.map((item, index) => (
-              <article
-                className={`gallery-tile ${index === 0 ? "feature" : ""}`}
-                key={`${item.title}-${index}`}
-              >
-                <div className="gallery-media">
-                  {item.type === "video" ? (
-                    <VideoTile videoId={item.videoId} title={item.title} />
-                  ) : (
-                    <Image
-                      src={item.img}
-                      alt={item.alt}
-                      fill
-                      sizes={index === 0 ? "55vw" : "28vw"}
-                    />
-                  )}
-                </div>
-                <span>{String(index + 1).padStart(2, "0")} / {item.title}</span>
-              </article>
-            ))}
-          </div>
-        </section>
+        <MediaSection />
 
         <section className="about-section" id="tentang">
           <div className="about-title">
@@ -653,10 +592,16 @@ Email: ${email}`,
       <section className="prefooter">
         <div>
           <span className="eyebrow">Ikuti kami</span>
-          <a href={site.instagram} target="_blank" rel="noopener noreferrer">
-            <Camera size={18} />
-            Instagram Lembu Lemu
-          </a>
+          <div className="prefooter-socials">
+            <a href={site.instagram} target="_blank" rel="noopener noreferrer">
+              <InstagramIcon size={18} />
+              Instagram Lembu Lemu
+            </a>
+            <a href={site.tiktok} target="_blank" rel="noopener noreferrer">
+              <TikTokIcon size={18} />
+              TikTok Lembu Lemu
+            </a>
+          </div>
         </div>
         <Image src={site.logo} alt="Lembu Lemu" width={148} height={148} />
         <form onSubmit={handleSubscribe}>

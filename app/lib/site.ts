@@ -61,14 +61,17 @@ export const site = {
   email: "akbaralfarizi886@gmail.com",
   address: "Desa Balerejo, RT 1, RW 1, Kecamatan Tlogomulyo, Kabupaten Temanggung, Jawa Tengah 50274",
   shortAddress: "Balerejo, Tlogomulyo, Temanggung",
-  instagram: "https://www.instagram.com/lembu_lemuofficial?igsh=bG01NGx6ZDljNDdj",
+  instagram: "https://www.instagram.com/lembu_lemuofficial/",
+  instagramHandle: "@lembu_lemuofficial",
+  tiktok: "https://www.tiktok.com/@lembu_lemuofficia",
+  tiktokHandle: "@lembu_lemuofficia",
   logo: "/logo.webp",
   ogImage: "/logo.webp",
 };
 
 export const navItems = [
   { href: "#beranda", label: "Beranda" },
-  { href: "#galeri", label: "Galeri" },
+  { href: "#galeri", label: "Media" },
   { href: "#tentang", label: "Tentang" },
   { href: "#produk", label: "Produk" },
   { href: "#layanan", label: "Layanan" },
@@ -528,38 +531,62 @@ export const trustPoints = [
   },
 ];
 
-export const galleryItems = [
+export type MediaVideo = {
+  /** ID video YouTube Shorts. */
+  id: string;
+  title: string;
+  /** Nama seri untuk video berseri, mis. "Kisah Pak Tasrin". */
+  series?: string;
+  part?: number;
+  description: string;
+};
+
+/** Urutan tampil di section "Informasi dan media sosial kami". */
+export const mediaVideos: MediaVideo[] = [
   {
-    type: "video",
-    title: "Proses produksi",
-    videoId: "WrOzwoMKzH4",
-    label: "Video proses",
+    id: "9VCQsraFD1s",
+    title: "Profil Lembu Lemu",
+    description:
+      "Kenalan dengan Lembu Lemu: dari kandang, pemotongan halal, sampai daging siap kirim ke dapur pelanggan.",
   },
   {
-    type: "photo",
-    title: "Kualitas premium",
-    img: "/kualtitas.jpg",
-    alt: "Daging segar berkualitas dari Lembu Lemu",
+    id: "dlLubMmT738",
+    title: "Kisah Pak Tasrin",
+    series: "Kisah Pak Tasrin",
+    part: 1,
+    description: "Keseharian di balik daging segar Lembu Lemu.",
   },
   {
-    type: "photo",
-    title: "Pemotongan",
-    img: "/pemotongan.jpg",
-    alt: "Proses pemotongan daging sapi",
+    id: "rcnpY9gdslg",
+    title: "Kisah Pak Tasrin",
+    series: "Kisah Pak Tasrin",
+    part: 2,
+    description: "Lanjutan kisah keseharian Pak Tasrin.",
   },
   {
-    type: "video",
-    title: "Standar halal",
-    videoId: "jLjP9xVJx-8",
-    label: "Video halal",
+    id: "28yi05s6PYA",
+    title: "Ngerti Daging",
+    series: "Ngerti Daging",
+    part: 1,
+    description: "Edukasi singkat seputar daging sapi.",
   },
   {
-    type: "photo",
-    title: "Kemasan",
-    img: "/kemasan.jpg",
-    alt: "Kemasan daging segar siap kirim",
+    id: "jky3zl2_gu8",
+    title: "Ngerti Daging",
+    series: "Ngerti Daging",
+    part: 2,
+    description: "Lanjutan edukasi seputar daging sapi.",
   },
-] as const;
+];
+
+export function youtubeShortUrl(id: string) {
+  return `https://www.youtube.com/shorts/${id}`;
+}
+
+/** Thumbnail 1280x720; frame vertikal Shorts ada di tengah, cocok untuk crop 9:16. */
+export function youtubeThumbnail(id: string) {
+  return `https://i.ytimg.com/vi/${id}/hq720.jpg`;
+}
 
 export const faqs = [
   {
