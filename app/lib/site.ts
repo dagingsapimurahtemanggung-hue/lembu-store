@@ -16,6 +16,13 @@ export type ProductItem = {
   alt: string;
   summary: string;
   uses: string[];
+  /** Pilihan dengan harga berbeda dalam satu produk, mis. Ati dan Limpo. */
+  variants?: ProductVariant[];
+};
+
+export type ProductVariant = {
+  label: string;
+  price: number;
 };
 
 export type ServiceItem = {
@@ -151,6 +158,10 @@ export const products: ProductItem[] = [
     summary:
       "Ati sapi dan limpa sapi untuk olahan bacem, sambal goreng, sate jeroan, dan menu warung yang membutuhkan bahan bersih.",
     uses: ["sambal goreng", "bacem", "sate jeroan", "warung makan"],
+    variants: [
+      { label: "Ati", price: 70000 },
+      { label: "Limpo", price: 80000 },
+    ],
   },
   {
     id: "s5",
@@ -930,6 +941,56 @@ export const seoClusters = [
 
 export function formatRupiah(value: number) {
   return `Rp ${value.toLocaleString("id-ID")}`;
+}
+
+/** Jumlah satuan dari label berat, mis. "0.5kg" -> 0.5, "2 biji" -> 2. */
+export function weightMultiplier(weight: string) {
+  return Number.parseFloat(weight) || 1;
+}
+
+/** Label satuan harga dasar, mis. "kg" atau "biji". */
+function unitSuffix(product: ProductItem) {
+  return product.unit.replace(/^per\s+/i, "").trim() || "kg";
+}
+
+/** Varian yang dipilih, atau varian pertama bila tidak ada yang cocok. */
+export function findVariant(product: ProductItem, label?: string) {
+  if (!product.variants?.length) {
+    return undefined;
+  }
+
+  return product.variants.find((variant) => variant.label === label) ?? product.variants[0];
+}
+
+/** Harga dasar per satuan, memakai harga varian bila produk punya varian. */
+export function unitPrice(product: ProductItem, variantLabel?: string) {
+  return findVariant(product, variantLabel)?.price ?? product.price;
+}
+
+/**
+ * Teks harga produk.
+ * - Tanpa `weight`: harga dasar ("Rp 145.000/kg"), atau `priceLabel` untuk produk
+ *   bervarian tanpa varian terpilih ("Ati Rp70.000 / Limpo Rp80.000").
+ * - Dengan `weight`: harga untuk berat itu ("Rp 72.500 / 0.5kg").
+ */
+export function productPriceText(product: ProductItem, weight?: string, variantLabel?: string) {
+  if (product.available === false) {
+    return product.priceLabel ?? "Tidak dijual";
+  }
+
+  const hasVariants = Boolean(product.variants?.length);
+
+  if (product.priceLabel && !(hasVariants && (variantLabel || weight))) {
+    return product.priceLabel;
+  }
+
+  const price = unitPrice(product, variantLabel);
+
+  if (weight) {
+    return `${formatRupiah(price * weightMultiplier(weight))} / ${weight}`;
+  }
+
+  return `${formatRupiah(price)}/${unitSuffix(product)}`;
 }
 
 export function productPath(product: ProductItem) {

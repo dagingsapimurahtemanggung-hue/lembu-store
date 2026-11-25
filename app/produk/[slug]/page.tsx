@@ -10,11 +10,14 @@ import {
   faqs,
   formatRupiah,
   productPath,
+  productPriceText,
   products,
   serviceAreas,
   services,
   site,
   siteUrl,
+  unitPrice,
+  weightMultiplier,
 } from "../../lib/site";
 
 type ProductPageProps = {
@@ -23,22 +26,6 @@ type ProductPageProps = {
 
 function getProduct(slug: string) {
   return products.find((product) => product.slug === slug);
-}
-
-function productPriceText(product: (typeof products)[number], weight?: string) {
-  if (product.available === false) {
-    return product.priceLabel ?? "Tidak dijual";
-  }
-
-  if (product.priceLabel) {
-    return product.priceLabel;
-  }
-
-  if (weight) {
-    return formatRupiah(product.price * (Number.parseFloat(weight) || 1));
-  }
-
-  return `${formatRupiah(product.price)}/kg`;
 }
 
 export function generateStaticParams() {
@@ -261,12 +248,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <aside>
             <h2>Pilihan berat</h2>
             <div className="detail-weight-list">
-              {product.weights.map((weight) => (
-                <span key={weight}>
-                  {weight}
-                  <strong>{productPriceText(product, weight)}</strong>
-                </span>
-              ))}
+              {(product.variants?.length
+                ? product.variants.map((variant) => variant.label)
+                : [undefined]
+              ).flatMap((variant) =>
+                product.weights.map((weight) => (
+                  <span key={`${variant ?? ""}-${weight}`}>
+                    {variant ? `${variant} ${weight}` : weight}
+                    <strong>
+                      {product.available === false
+                        ? productPriceText(product)
+                        : formatRupiah(unitPrice(product, variant) * weightMultiplier(weight))}
+                    </strong>
+                  </span>
+                )),
+              )}
             </div>
           </aside>
         </section>

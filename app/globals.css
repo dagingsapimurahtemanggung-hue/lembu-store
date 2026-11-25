@@ -989,6 +989,12 @@ img {
   padding: 0 1rem;
 }
 
+.prefooter-note {
+  margin: 0.55rem 0 0;
+  color: var(--muted-light);
+  font-size: 0.78rem;
+}
+
 .site-footer {
   padding: clamp(3rem, 6vw, 5rem) clamp(1rem, 5vw, 5rem) 1.25rem;
   background: var(--ink);

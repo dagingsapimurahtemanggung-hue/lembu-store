@@ -28,11 +28,13 @@ import {
 import { useEffect, useState } from "react";
 import {
   faqs,
+  findVariant,
   formatRupiah,
   galleryItems,
   navItems,
   areaPath,
   productPath,
+  productPriceText,
   products,
   seoClusters,
   serviceAreas,
@@ -41,6 +43,8 @@ import {
   site,
   sourceReferences,
   trustPoints,
+  unitPrice,
+  weightMultiplier,
   type ProductItem,
 } from "../lib/site";
 
@@ -51,29 +55,10 @@ type CartItem = {
   img: string;
   price: number;
   priceLabel: string;
+  variant?: string;
   weight: string;
   quantity: number;
 };
-
-function weightMultiplier(weight: string) {
-  return Number.parseFloat(weight.replace("kg", "")) || 1;
-}
-
-function productPriceText(product: ProductItem, weight?: string) {
-  if (product.available === false) {
-    return product.priceLabel ?? "Tidak dijual";
-  }
-
-  if (product.priceLabel) {
-    return product.priceLabel;
-  }
-
-  if (weight) {
-    return `${formatRupiah(product.price * weightMultiplier(weight))} / ${weight}`;
-  }
-
-  return `${formatRupiah(product.price)}/kg`;
-}
 
 function buildWhatsAppText(cart: CartItem[]) {
   const total = cart.reduce(
@@ -129,6 +114,13 @@ function VideoTile({ videoId, title }: { videoId: string; title: string }) {
 export function LembuHome() {
   const [selectedWeights, setSelectedWeights] = useState<Record<string, string>>(() =>
     Object.fromEntries(products.map((product) => [product.id, product.defaultWeight])),
+  );
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      products.flatMap((product) =>
+        product.variants?.length ? [[product.id, product.variants[0].label]] : [],
+      ),
+    ),
   );
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
@@ -187,7 +179,9 @@ export function LembuHome() {
     }
 
     const weight = selectedWeights[product.id] ?? product.defaultWeight;
-    const key = `${product.id}-${weight}`;
+    const variant = findVariant(product, selectedVariants[product.id])?.label;
+    const key = `${product.id}-${variant ?? ""}-${weight}`;
+    const itemName = variant ? `${product.name} (${variant})` : product.name;
 
     setCart((current) => {
       const existing = current.find((item) => item.key === key);
@@ -202,17 +196,18 @@ export function LembuHome() {
         {
           key,
           productId: product.id,
-          name: product.name,
+          name: itemName,
           img: product.img,
-          price: product.price,
-          priceLabel: productPriceText(product),
+          price: unitPrice(product, variant),
+          priceLabel: productPriceText(product, undefined, variant),
+          variant,
           weight,
           quantity: 1,
         },
       ];
     });
 
-    setNotice(`${product.name} ${weight} masuk keranjang`);
+    setNotice(`${itemName} ${weight} masuk keranjang`);
     setCartOpen(true);
   }
 
@@ -264,8 +259,15 @@ export function LembuHome() {
       return;
     }
 
+    const subject = encodeURIComponent("Daftar update harga dan stok");
+    const body = encodeURIComponent(
+      `Halo Lembu Lemu, saya ingin menerima update harga dan stok daging.
+
+Email: ${email}`,
+    );
+    window.location.href = `mailto:${site.email}?subject=${subject}&body=${body}`;
     event.currentTarget.reset();
-    setNotice("Email dicatat untuk update stok dan harga");
+    setNotice("Email pendaftaran siap dikirim");
   }
 
   return (
@@ -300,7 +302,12 @@ export function LembuHome() {
         </nav>
 
         <div className="header-actions">
-          <button className="cart-trigger" type="button" onClick={() => setCartOpen(true)}>
+          <button
+            className="cart-trigger"
+            type="button"
+            aria-label={`Buka keranjang, ${cartQuantity} item`}
+            onClick={() => setCartOpen(true)}
+          >
             <ShoppingCart size={18} />
             <span>{cartQuantity}</span>
           </button>
@@ -459,7 +466,8 @@ export function LembuHome() {
           <div className="product-grid">
             {products.map((product) => {
               const weight = selectedWeights[product.id] ?? product.defaultWeight;
-              const displayPrice = productPriceText(product, weight);
+              const variant = findVariant(product, selectedVariants[product.id])?.label;
+              const displayPrice = productPriceText(product, weight, variant);
 
               return (
                 <article className="product-card" key={product.id}>
@@ -478,6 +486,26 @@ export function LembuHome() {
                       <h3>{product.name}</h3>
                       <p>{product.cut}</p>
                     </div>
+                    {product.variants?.length ? (
+                      <div className="weight-row" aria-label={`Pilih jenis ${product.name}`}>
+                        {product.variants.map((item) => (
+                          <button
+                            key={item.label}
+                            type="button"
+                            aria-pressed={variant === item.label}
+                            className={variant === item.label ? "selected" : ""}
+                            onClick={() =>
+                              setSelectedVariants((current) => ({
+                                ...current,
+                                [product.id]: item.label,
+                              }))
+                            }
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
                     <div className="weight-row" aria-label={`Pilih berat ${product.name}`}>
                       {product.weights.map((itemWeight) => (
                         <button
@@ -643,6 +671,9 @@ export function LembuHome() {
             />
             <button type="submit">Daftar</button>
           </div>
+          <p className="prefooter-note">
+            Membuka aplikasi email Anda untuk mengirim permintaan ke tim kami.
+          </p>
         </form>
       </section>
 
@@ -713,8 +744,14 @@ export function LembuHome() {
         </div>
       </footer>
 
-      <aside className={`cart-panel ${cartOpen ? "open" : ""}`} aria-hidden={!cartOpen}>
-        <button className="cart-backdrop" type="button" onClick={() => setCartOpen(false)} />
+      <aside className={`cart-panel ${cartOpen ? "open" : ""}`} inert={!cartOpen}>
+        <button
+          className="cart-backdrop"
+          type="button"
+          tabIndex={-1}
+          aria-label="Tutup keranjang"
+          onClick={() => setCartOpen(false)}
+        />
         <div className="cart-drawer" role="dialog" aria-modal="true" aria-label="Keranjang belanja">
           <div className="cart-head">
             <div>
