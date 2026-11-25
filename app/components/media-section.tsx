@@ -1,15 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { ArrowUpRight, Play } from "lucide-react";
-import { useState } from "react";
-import {
-  mediaVideos,
-  site,
-  youtubeShortUrl,
-  youtubeThumbnail,
-  type MediaVideo,
-} from "../lib/site";
+import { Play } from "lucide-react";
+import { useRef, useState } from "react";
+import { mediaFeature, mediaSeries, site, youtubeThumbnail, type MediaSeries } from "../lib/site";
+import { TvPlayer, type TvItem } from "./tv-player";
 
 /* Logo merek ditulis inline karena ikon merek tidak tersedia di lucide-react. */
 export function InstagramIcon({ size = 24 }: { size?: number }) {
@@ -46,73 +41,67 @@ function Handle({ value }: { value: string }) {
   );
 }
 
-function videoLabel(video: MediaVideo) {
-  return video.part ? `${video.title} part ${video.part}` : video.title;
+type PlayerSession = {
+  items: TvItem[];
+  index: number;
+  origin: HTMLElement;
+};
+
+const featureItems: TvItem[] = [
+  { id: mediaFeature.id, title: mediaFeature.title, label: "Film utama · Profil" },
+];
+
+function seriesItems(series: MediaSeries): TvItem[] {
+  return series.episodes.map((episode, position) => ({
+    id: episode.id,
+    title: episode.title,
+    label: `${series.title} · Eps ${position + 1} dari ${series.episodes.length}`,
+  }));
 }
 
-/** Thumbnail Shorts 9:16 yang berubah jadi pemutar YouTube saat diklik. */
-function ShortPlayer({ video, priority = false }: { video: MediaVideo; priority?: boolean }) {
-  const [playing, setPlaying] = useState(false);
-  const label = videoLabel(video);
+const tickerItems = ["Sedang tayang", mediaFeature.title, ...mediaSeries.map((series) => series.title)];
 
-  if (playing) {
-    return (
-      <iframe
-        className="short-frame"
-        title={label}
-        src={`https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&playsinline=1&rel=0`}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowFullScreen
-      />
-    );
-  }
+type PosterProps = {
+  id: string;
+  label: string;
+  sizes: string;
+  priority?: boolean;
+  onPlay: (origin: HTMLElement) => void;
+  children?: React.ReactNode;
+  posterRef?: React.Ref<HTMLButtonElement>;
+};
 
+function Poster({ id, label, sizes, priority, onPlay, children, posterRef }: PosterProps) {
   return (
     <button
-      className="short-thumb"
+      ref={posterRef}
+      className="tv-poster"
       type="button"
-      onClick={() => setPlaying(true)}
-      aria-label={`Putar video ${label}`}
+      aria-label={`Putar ${label}`}
+      onClick={(event) => onPlay(event.currentTarget)}
     >
-      <Image
-        src={youtubeThumbnail(video.id)}
-        alt=""
-        fill
-        priority={priority}
-        sizes="(max-width: 620px) 46vw, (max-width: 920px) 24vw, 300px"
-      />
-      <span className="short-play" aria-hidden="true">
+      <Image src={youtubeThumbnail(id)} alt="" fill sizes={sizes} priority={priority} />
+      <span className="tv-play" aria-hidden="true">
         <Play size={22} fill="currentColor" />
       </span>
+      {children ? <span className="tv-poster-meta">{children}</span> : null}
     </button>
   );
 }
 
-function SeriesTile({ video }: { video: MediaVideo }) {
-  return (
-    <article className="media-tile media-short">
-      <ShortPlayer video={video} />
-      <div className="media-short-meta" aria-hidden="true">
-        <span className="media-chip">{video.series ?? "Video"}</span>
-        {video.part ? (
-          <strong className="media-part">
-            Part <span>{String(video.part).padStart(2, "0")}</span>
-          </strong>
-        ) : null}
-      </div>
-      <h3 className="sr-only">{videoLabel(video)}</h3>
-    </article>
-  );
-}
-
 export function MediaSection() {
-  const [profile, ...series] = mediaVideos;
+  const [session, setSession] = useState<PlayerSession | null>(null);
+  const featurePosterRef = useRef<HTMLButtonElement>(null);
+
+  const open = (items: TvItem[], index: number, origin: HTMLElement) => {
+    setSession({ items, index, origin });
+  };
 
   return (
-    <section className="gallery-section media-section" id="galeri">
+    <section className="gallery-section tv-section" id="galeri">
       <div className="section-head split">
         <div>
-          <span className="eyebrow">Informasi &amp; media sosial</span>
+          <span className="eyebrow">Lembu Lemu TV</span>
           <h2>Informasi dan media sosial kami.</h2>
         </div>
         <p>
@@ -121,63 +110,124 @@ export function MediaSection() {
         </p>
       </div>
 
-      <div className="media-bento">
-        <article className="media-tile media-profile">
-          <div className="media-profile-video">
-            <ShortPlayer video={profile} priority />
-          </div>
-          <div className="media-profile-copy">
-            <span className="media-chip">Video profil</span>
-            <h3>{profile.title}</h3>
-            <p>{profile.description}</p>
-            <a
-              className="media-link"
-              href={youtubeShortUrl(profile.id)}
-              target="_blank"
-              rel="noopener noreferrer"
+      <div className="tv-ticker" aria-hidden="true">
+        <div className="tv-ticker-track">
+          {[0, 1, 2, 3].map((copy) => (
+            <span key={copy}>
+              {tickerItems.map((text) => (
+                <span key={text}>
+                  {text}
+                  <i>✦</i>
+                </span>
+              ))}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="tv-wrap">
+        <article className="tv-feature">
+          <Poster
+            posterRef={featurePosterRef}
+            id={mediaFeature.id}
+            label={mediaFeature.title}
+            sizes="(max-width: 620px) 64vw, 320px"
+            priority
+            onPlay={(origin) => open(featureItems, 0, origin)}
+          />
+          <div className="tv-feature-copy">
+            <span className="tv-kicker">Film utama · Profil</span>
+            <h3>{mediaFeature.title}</h3>
+            <p className="tv-tagline">{mediaFeature.tagline}</p>
+            <ul className="tv-credits" aria-label="Info singkat">
+              {mediaFeature.credits.map((credit) => (
+                <li key={credit}>{credit}</li>
+              ))}
+            </ul>
+            <button
+              className="tv-watch"
+              type="button"
+              onClick={() => {
+                if (featurePosterRef.current) {
+                  open(featureItems, 0, featurePosterRef.current);
+                }
+              }}
             >
-              Tonton di YouTube
-              <ArrowUpRight size={16} />
-            </a>
+              <Play size={18} fill="currentColor" />
+              Tonton sekarang
+            </button>
           </div>
         </article>
 
-        {series.map((video) => (
-          <SeriesTile video={video} key={video.id} />
-        ))}
+        <div className="tv-series-grid">
+          {mediaSeries.map((series) => {
+            const items = seriesItems(series);
+            return (
+              <article className="tv-series" key={series.slug}>
+                <header>
+                  <span className="tv-kicker">
+                    {series.kind} · {series.episodes.length} episode
+                  </span>
+                  <h3>{series.title}</h3>
+                  <p>{series.blurb}</p>
+                </header>
+                <ol className="tv-episodes-row">
+                  {series.episodes.map((episode, position) => (
+                    <li key={episode.id}>
+                      <Poster
+                        id={episode.id}
+                        label={`${series.title} episode ${position + 1}: ${episode.title}`}
+                        sizes="(max-width: 620px) 44vw, (max-width: 920px) 22vw, 260px"
+                        onPlay={(origin) => open(items, position, origin)}
+                      >
+                        <span className="tv-ep-num">
+                          Eps <b>{String(position + 1).padStart(2, "0")}</b>
+                        </span>
+                        <span className="tv-ep-title">{episode.title}</span>
+                      </Poster>
+                    </li>
+                  ))}
+                </ol>
+              </article>
+            );
+          })}
+        </div>
 
-        <a
-          className="media-tile media-social media-instagram"
-          href={site.instagram}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <InstagramIcon size={40} />
-          <span className="media-social-label">Instagram</span>
-          <Handle value={site.instagramHandle} />
-          <span className="media-social-body">Foto produk, info stok, dan kabar terbaru.</span>
-          <span className="media-social-cta">
-            Buka Instagram
-            <ArrowUpRight size={16} />
-          </span>
-        </a>
-
-        <a
-          className="media-tile media-social media-tiktok"
-          href={site.tiktok}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <TikTokIcon size={40} />
-          <span className="media-social-label">TikTok</span>
-          <Handle value={site.tiktokHandle} />
-          <span className="media-social-body">Video singkat proses dan keseharian kami.</span>
-          <span className="media-social-cta">
-            Buka TikTok
-            <ArrowUpRight size={16} />
-          </span>
-        </a>
+        <div className="tv-credits-roll">
+          <span className="tv-credit-label">Diproduksi oleh</span>
+          <strong className="tv-credit-name">Lembu Lemu · Balerejo</strong>
+          <span className="tv-credit-label">Ikuti kelanjutannya di</span>
+          <div className="tv-social">
+            <a className="tv-social-ig" href={site.instagram} target="_blank" rel="noopener noreferrer">
+              <span className="tv-social-icon">
+                <InstagramIcon size={22} />
+              </span>
+              <span>
+                <small>Instagram</small>
+                <Handle value={site.instagramHandle} />
+              </span>
+            </a>
+            <a className="tv-social-tt" href={site.tiktok} target="_blank" rel="noopener noreferrer">
+              <span className="tv-social-icon">
+                <TikTokIcon size={22} />
+              </span>
+              <span>
+                <small>TikTok</small>
+                <Handle value={site.tiktokHandle} />
+              </span>
+            </a>
+          </div>
+        </div>
       </div>
+
+      {session ? (
+        <TvPlayer
+          items={session.items}
+          startIndex={session.index}
+          origin={session.origin}
+          onClose={() => setSession(null)}
+        />
+      ) : null}
     </section>
   );
 }

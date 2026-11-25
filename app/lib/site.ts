@@ -531,51 +531,49 @@ export const trustPoints = [
   },
 ];
 
-export type MediaVideo = {
+export type MediaEpisode = {
   /** ID video YouTube Shorts. */
   id: string;
   title: string;
-  /** Nama seri untuk video berseri, mis. "Kisah Pak Tasrin". */
-  series?: string;
-  part?: number;
-  description: string;
 };
 
-/** Urutan tampil di section "Informasi dan media sosial kami". */
-export const mediaVideos: MediaVideo[] = [
+export type MediaSeries = {
+  slug: string;
+  title: string;
+  kind: string;
+  blurb: string;
+  episodes: MediaEpisode[];
+};
+
+/** "Film utama" di section Lembu Lemu TV. */
+export const mediaFeature = {
+  id: "9VCQsraFD1s",
+  title: "Profil Lembu Lemu",
+  tagline: "Dari kandang sendiri, sampai ke dapur Anda.",
+  credits: ["Balerejo, Temanggung", "Halal", "Buka 04.00"],
+};
+
+/** Serial video, urut sesuai part. */
+export const mediaSeries: MediaSeries[] = [
   {
-    id: "9VCQsraFD1s",
-    title: "Profil Lembu Lemu",
-    description:
-      "Kenalan dengan Lembu Lemu: dari kandang, pemotongan halal, sampai daging siap kirim ke dapur pelanggan.",
-  },
-  {
-    id: "dlLubMmT738",
+    slug: "kisah-pak-tasrin",
     title: "Kisah Pak Tasrin",
-    series: "Kisah Pak Tasrin",
-    part: 1,
-    description: "Keseharian di balik daging segar Lembu Lemu.",
+    kind: "Serial",
+    blurb: "Keseharian di balik daging segar Lembu Lemu, dimulai sebelum subuh.",
+    episodes: [
+      { id: "dlLubMmT738", title: "Setiap hari, bapak bangun jam 2 pagi" },
+      { id: "rcnpY9gdslg", title: "Kenapa bapak bangun sepagi itu?" },
+    ],
   },
   {
-    id: "rcnpY9gdslg",
-    title: "Kisah Pak Tasrin",
-    series: "Kisah Pak Tasrin",
-    part: 2,
-    description: "Lanjutan kisah keseharian Pak Tasrin.",
-  },
-  {
-    id: "28yi05s6PYA",
+    slug: "ngerti-daging",
     title: "Ngerti Daging",
-    series: "Ngerti Daging",
-    part: 1,
-    description: "Edukasi singkat seputar daging sapi.",
-  },
-  {
-    id: "jky3zl2_gu8",
-    title: "Ngerti Daging",
-    series: "Ngerti Daging",
-    part: 2,
-    description: "Lanjutan edukasi seputar daging sapi.",
+    kind: "Serial edukasi",
+    blurb: "Belajar singkat soal potongan daging sapi bareng Lembu Lemu.",
+    episodes: [
+      { id: "28yi05s6PYA", title: "Daging nomor 1, 2, 3, apa bedanya?" },
+      { id: "jky3zl2_gu8", title: "Saran olahan dari Lembu Lemu" },
+    ],
   },
 ];
 
