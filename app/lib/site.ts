@@ -65,6 +65,8 @@ export const site = {
   instagramHandle: "@lembu_lemuofficial",
   tiktok: "https://www.tiktok.com/@lembu_lemuofficia",
   tiktokHandle: "@lembu_lemuofficia",
+  facebook: "https://www.facebook.com/akbar.lembulemu",
+  facebookHandle: "akbar.lembulemu",
   logo: "/logo.webp",
   ogImage: "/logo.webp",
 };

@@ -94,7 +94,7 @@ const jsonLd = {
           closes: "11:00",
         },
       ],
-      sameAs: [site.instagram, site.tiktok, `https://wa.me/${site.whatsapp}`],
+      sameAs: [site.instagram, site.tiktok, site.facebook, `https://wa.me/${site.whatsapp}`],
       hasOfferCatalog: {
         "@type": "OfferCatalog",
         name: "Katalog daging sapi Lembu Lemu",

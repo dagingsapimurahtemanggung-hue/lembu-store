@@ -24,7 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { InstagramIcon, MediaSection, TikTokIcon } from "./media-section";
+import { FacebookIcon, InstagramIcon, MediaSection, TikTokIcon } from "./media-section";
 import {
   faqs,
   findVariant,
@@ -257,6 +257,10 @@ Email: ${email}`,
         <a href={site.tiktok} className="topbar-icon" target="_blank" rel="noopener noreferrer">
           <TikTokIcon size={15} />
           <span className="sr-only">TikTok Lembu Lemu</span>
+        </a>
+        <a href={site.facebook} className="topbar-icon" target="_blank" rel="noopener noreferrer">
+          <FacebookIcon size={15} />
+          <span className="sr-only">Facebook Lembu Lemu</span>
         </a>
       </div>
 
@@ -600,6 +604,10 @@ Email: ${email}`,
             <a href={site.tiktok} target="_blank" rel="noopener noreferrer">
               <TikTokIcon size={18} />
               TikTok Lembu Lemu
+            </a>
+            <a href={site.facebook} target="_blank" rel="noopener noreferrer">
+              <FacebookIcon size={18} />
+              Facebook Lembu Lemu
             </a>
           </div>
         </div>

@@ -25,6 +25,14 @@ export function TikTokIcon({ size = 24 }: { size?: number }) {
   );
 }
 
+export function FacebookIcon({ size = 24 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M13.5 21v-7.6h2.6l.4-3h-3V8.5c0-.9.3-1.5 1.5-1.5h1.6V4.3c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.8v3h2.6V21h3.1z" />
+    </svg>
+  );
+}
+
 /** Pecah handle setelah "_" supaya di layar sempit tidak terpotong di tengah kata. */
 function Handle({ value }: { value: string }) {
   const [first, ...rest] = value.split("_");
@@ -214,6 +222,15 @@ export function MediaSection() {
               <span>
                 <small>TikTok</small>
                 <Handle value={site.tiktokHandle} />
+              </span>
+            </a>
+            <a className="tv-social-fb" href={site.facebook} target="_blank" rel="noopener noreferrer">
+              <span className="tv-social-icon">
+                <FacebookIcon size={22} />
+              </span>
+              <span>
+                <small>Facebook</small>
+                <Handle value={site.facebookHandle} />
               </span>
             </a>
           </div>

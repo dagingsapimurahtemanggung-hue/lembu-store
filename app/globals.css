@@ -829,6 +829,16 @@ img {
   color: var(--porcelain);
 }
 
+.tv-social-fb {
+  background: var(--butcher);
+  color: var(--ink);
+}
+
+.tv-social-fb .tv-social-icon {
+  background: #1877f2;
+  color: white;
+}
+
 .tv-social-tt svg {
   filter: drop-shadow(1.5px 1.5px 0 #25f4ee) drop-shadow(-1.5px -1.5px 0 #fe2c55);
 }
