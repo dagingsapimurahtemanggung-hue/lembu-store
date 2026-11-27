@@ -1,9 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { Play } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Play } from "lucide-react";
 import { useRef, useState } from "react";
-import { mediaFeature, mediaSeries, site, youtubeThumbnail, type MediaSeries } from "../lib/site";
+import {
+  mediaFeature,
+  mediaMenu,
+  mediaSeries,
+  productPath,
+  products,
+  site,
+  youtubeThumbnail,
+  type MediaSeries,
+} from "../lib/site";
 import { TvPlayer, type TvItem } from "./tv-player";
 
 /* Logo merek ditulis inline karena ikon merek tidak tersedia di lucide-react. */
@@ -67,7 +77,21 @@ function seriesItems(series: MediaSeries): TvItem[] {
   }));
 }
 
-const tickerItems = ["Sedang tayang", mediaFeature.title, ...mediaSeries.map((series) => series.title)];
+const menuItems: TvItem[] = [{ id: mediaMenu.id, title: mediaMenu.title, label: "Daftar menu" }];
+
+const menuProducts = mediaMenu.productSlugs
+  .map((slug) => products.find((product) => product.slug === slug))
+  .filter((product) => product !== undefined);
+
+const tickerItems = [
+  "Sedang tayang",
+  mediaFeature.title,
+  "Daftar Menu",
+  ...mediaSeries.map((series) => series.title),
+];
+
+/** Lebar kartu serial sebanding jumlah episodenya, supaya semua poster sama besar. */
+const seriesColumns = mediaSeries.map((series) => `${series.episodes.length}fr`).join(" ");
 
 type PosterProps = {
   id: string;
@@ -100,6 +124,7 @@ function Poster({ id, label, sizes, priority, onPlay, children, posterRef }: Pos
 export function MediaSection() {
   const [session, setSession] = useState<PlayerSession | null>(null);
   const featurePosterRef = useRef<HTMLButtonElement>(null);
+  const menuPosterRef = useRef<HTMLButtonElement>(null);
 
   const open = (items: TvItem[], index: number, origin: HTMLElement) => {
     setSession({ items, index, origin });
@@ -167,7 +192,50 @@ export function MediaSection() {
           </div>
         </article>
 
-        <div className="tv-series-grid">
+        <article className="tv-menu">
+          <div className="tv-menu-copy">
+            <span className="tv-kicker">Daftar menu</span>
+            <h3>{mediaMenu.title}</h3>
+            <p className="tv-tagline">{mediaMenu.tagline}</p>
+            <ul className="tv-menu-list" aria-label="Produk di video menu">
+              {menuProducts.map((product) => (
+                <li key={product.slug}>
+                  <Link href={productPath(product)}>{product.name}</Link>
+                </li>
+              ))}
+            </ul>
+            <div className="tv-menu-actions">
+              <button
+                className="tv-watch"
+                type="button"
+                onClick={() => {
+                  if (menuPosterRef.current) {
+                    open(menuItems, 0, menuPosterRef.current);
+                  }
+                }}
+              >
+                <Play size={18} fill="currentColor" />
+                Tonton menu
+              </button>
+              <a className="tv-menu-link" href="#produk">
+                Lihat katalog
+                <ArrowRight size={17} />
+              </a>
+            </div>
+          </div>
+          <Poster
+            posterRef={menuPosterRef}
+            id={mediaMenu.id}
+            label={mediaMenu.title}
+            sizes="(max-width: 620px) 64vw, 320px"
+            onPlay={(origin) => open(menuItems, 0, origin)}
+          />
+        </article>
+
+        <div
+          className="tv-series-grid"
+          style={{ "--series-cols": seriesColumns } as React.CSSProperties}
+        >
           {mediaSeries.map((series) => {
             const items = seriesItems(series);
             return (
@@ -179,7 +247,10 @@ export function MediaSection() {
                   <h3>{series.title}</h3>
                   <p>{series.blurb}</p>
                 </header>
-                <ol className="tv-episodes-row">
+                <ol
+                  className="tv-episodes-row"
+                  style={{ "--eps": series.episodes.length } as React.CSSProperties}
+                >
                   {series.episodes.map((episode, position) => (
                     <li key={episode.id}>
                       <Poster

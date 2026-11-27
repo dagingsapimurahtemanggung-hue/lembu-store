@@ -555,6 +555,15 @@ export const mediaFeature = {
   credits: ["Balerejo, Temanggung", "Halal", "Buka 04.00"],
 };
 
+/** Video daftar menu, tampil tepat di bawah film utama. */
+export const mediaMenu = {
+  id: "8QjHo3FAvJo",
+  title: "Daftar Menu Daging Sapi",
+  tagline: "Daging segar pilihan terbaik.",
+  /** Slug produk yang muncul di video, ditautkan ke halaman produknya. */
+  productSlugs: ["daging-super", "has-dalam", "ati-limpo", "babat-iso", "buntut", "balung-igo"],
+};
+
 /** Serial video, urut sesuai part. */
 export const mediaSeries: MediaSeries[] = [
   {
@@ -571,10 +580,12 @@ export const mediaSeries: MediaSeries[] = [
     slug: "ngerti-daging",
     title: "Ngerti Daging",
     kind: "Serial edukasi",
-    blurb: "Belajar singkat soal potongan daging sapi bareng Lembu Lemu.",
+    blurb: "Belajar singkat soal potongan daging sapi dan bagian yang cocok untuk menu favorit.",
     episodes: [
       { id: "28yi05s6PYA", title: "Daging nomor 1, 2, 3, apa bedanya?" },
       { id: "jky3zl2_gu8", title: "Saran olahan dari Lembu Lemu" },
+      { id: "zCwDlV5SC9k", title: "Bakso cocoknya dari bagian mana?" },
+      { id: "0GMciJcoJxU", title: "Gultik cocoknya dari bagian mana?" },
     ],
   },
 ];
